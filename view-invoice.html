@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Invoice - InvoiceGen | Professional Invoice</title>
+    <meta name="description" content="View and manage your professional invoice. Download as PDF, print, or share with clients.">
+    <meta name="keywords" content="view invoice, invoice details, download invoice, print invoice">
+    
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:title" content="View Invoice - InvoiceGen">
+    <meta property="og:description" content="View and manage your professional invoice. Download as PDF, print, or share with clients.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://invoicegen.example.com/view-invoice.html">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3498db">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="InvoiceGen">
+    <link rel="apple-touch-icon" href="images/icons/icon-192x192.png">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="images/icons/favicon-16x16.png">
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- HTML2PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --primary-color: #2c5aa0;
+            --primary-light: #4a76c8;
+            --primary-dark: #1a3d7a;
+            --secondary-color: #34495e;
+            --accent-color: #e67e22;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --light-bg: #f8f9fa;
+            --dark-bg: #2c3e50;
+            --text-primary: #2c3e50;
+            --text-secondary: #6c757d;
+            --border-color: #e9ecef;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --gradient-primary: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .navbar {
+            background: var(--gradient-primary);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .invoice-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .invoice-header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 2rem;
+            position: relative;
+        }
+
+        .invoice-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transform: translate(30%, -30%);
+        }
+
+        .invoice-badge {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 25px;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+
+        .company-logo {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .invoice-content {
+            padding: 2rem;
+        }
+
+        .section-title {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary-light);
+        }
+
+        .client-info, .company-info {
+            background: var(--light-bg);
+            padding: 1.5rem;
+            border-radius: 10px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .table-custom {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .table-custom thead {
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .table-custom th {
+            border: none;
+            padding: 1rem;
+            font-weight: 600;
+        }
+
+        .table-custom td {
+            padding: 1rem;
+            border-color: var(--border-color);
+        }
+
+        .total-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-top: 2rem;
+        }
+
+        .amount-display {
+            font-size: 2rem;
+            font-weight: 700;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .badge-paid {
+            background: linear-gradient(135deg, #27ae60, #219653);
+            color: white;
+        }
+
+        .badge-pending {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: white;
+        }
+
+        .badge-overdue {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .action-btn {
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .btn-download {
+            background: linear-gradient(135deg, #27ae60, #219653);
+            color: white;
+        }
+
+        .btn-print {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+        }
+
+        .btn-send {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .notes-section {
+            background: linear-gradient(135deg, #ffeaa7, #fab1a0);
+            padding: 1.5rem;
+            border-radius: 10px;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .payment-info {
+            background: linear-gradient(135deg, #a29bfe, #6c5ce7);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+        }
+
+        @media print {
+            body {
+                background: white !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .invoice-container {
+                box-shadow: none !important;
+                margin: 0 !important;
+            }
+        }
+
+        .footer {
+            background: var(--secondary-color);
+            color: white;
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="dashboard.html">
+                <i class="fas fa-file-invoice-dollar"></i> InvoiceGen
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.html">
+                            <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="invoices.html">
+                            <i class="fas fa-file-invoice me-1"></i> Invoices
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="create-invoice.html">
+                            <i class="fas fa-plus-circle me-1"></i> Create Invoice
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="billing.html">
+                            <i class="fas fa-wallet me-1"></i> Billing
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle me-1"></i> Account
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="settings.html"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="logout-link"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container py-4">
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h3 fw-bold text-white mb-1">Invoice Details</h1>
+                        <p class="text-white-50 mb-0">Professional invoice view</p>
+                    </div>
+                    <div class="btn-group no-print">
+                        <button onclick="downloadPDF()" class="btn btn-download action-btn me-2">
+                            <i class="fas fa-download me-2"></i>Download PDF
+                        </button>
+                        <button onclick="downloadPDFFallback()" class="btn btn-download action-btn me-2">
+                            <i class="fas fa-download me-2"></i>Download PDF (HTML2PDF)
+                        </button>
+                        <button onclick="printInvoice()" class="btn btn-print action-btn me-2">
+                            <i class="fas fa-print me-2"></i>Print
+                        </button>
+                        <button onclick="sendToClient()" class="btn btn-send action-btn me-2">
+                            <i class="fas fa-paper-plane me-2"></i>Send to Client
+                        </button>
+                        <a href="invoices.html" class="btn btn-outline-light action-btn">
+                            <i class="fas fa-arrow-left me-2"></i>Back
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Invoice Container -->
+        <div class="invoice-container" id="invoice-content">
+            <!-- Invoice Header -->
+            <div class="invoice-header">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <div class="company-logo">
+                            <i class="fas fa-file-invoice"></i>
+                        </div>
+                        <h2 class="mb-1" id="company-name">Your Company</h2>
+                        <p class="mb-0 opacity-75" id="company-tagline">Professional Services</p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <h1 class="display-4 fw-bold mb-2">INVOICE</h1>
+                        <div class="invoice-badge d-inline-block">
+                            <span id="invoice-number-display">INV-0001</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Invoice Content -->
+            <div class="invoice-content">
+                <!-- Status & Details -->
+                <div class="row mb-4">
+                	<div class="col-md-8">
+                        <div id="status-alert" class="mb-3">
+                            <!-- Status alerts will be populated here -->
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="bg-light p-3 rounded-3">
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Issue Date</small>
+                                    <strong id="issue-date-display">-</strong>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block">Due Date</small>
+                                    <strong id="due-date-display">-</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Company & Client Info -->
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-3">
+                        <h4 class="section-title">From</h4>
+                        <div class="company-info">
+                            <div id="from-details">
+                                <!-- Company details will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <h4 class="section-title">Bill To</h4>
+                        <div class="client-info">
+                            <div id="bill-to-details">
+                                <!-- Client details will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Items Table -->
+                <div class="mb-4">
+                    <h4 class="section-title">Items & Services</h4>
+                    <div class="table-responsive">
+                        <table class="table table-custom">
+                            <thead>
+                                <tr>
+                                    <th>Description</th>
+                                    <th class="text-center">Qty</th>
+                                    <th class="text-end">Unit Price</th>
+                                    <th class="text-end">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="invoice-items">
+                                <!-- Items will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Totals -->
+                <div class="row">
+                    <div class="col-md-8">
+                        <!-- Notes & Payment Info -->
+                        <div id="notes-section" class="notes-section mb-3" style="display: none;">
+                            <h5><i class="fas fa-sticky-note me-2"></i>Notes</h5>
+                            <p id="invoice-notes" class="mb-0"></p>
+                        </div>
+                        <div id="payment-info-section" class="payment-info" style="display: none;">
+                            <h5><i class="fas fa-credit-card me-2"></i>Payment Information</h5>
+                            <div id="payment-instructions"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="total-section">
+                            <div class="row mb-2">
+                                <div class="col-6">
+                                    <strong>Subtotal:</strong>
+                                </div>
+                                <div class="col-6 text-end">
+                                    <strong id="subtotal-display">$0.00</strong>
+                                </div>
+                            </div>
+                            <div class="row mb-2" id="tax-row" style="display: none;">
+                                <div class="col-6">
+                                    <strong id="tax-label">Tax:</strong>
+                                </div>
+                                <div class="col-6 text-end">
+                                    <strong id="tax-amount-display">$0.00</strong>
+                                </div>
+                            </div>
+                            <hr style="border-color: rgba(255,255,255,0.3);">
+                            <div class="row">
+                                <div class="col-6">
+                                    <strong class="fs-5">Total:</strong>
+                                </div>
+                                <div class="col-6">
+                                    <span class="amount-display" style="font-size: 20px;" id="total-amount-display">$0.00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="row mt-5 pt-4 border-top">
+                    <div class="col-12 text-center">
+                        <p class="text-muted mb-2">
+                            <i class="fas fa-file-invoice-dollar me-2"></i>
+                            Generated by InvoiceGen • Professional Invoicing Solution
+                        </p>
+                        <p class="text-muted small">
+                            Created on <span id="generated-date"></span> • 
+                            Invoice ID: <span id="invoice-id-display"></span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container text-center">
+            <p class="mb-0">&copy; 2023 InvoiceGen. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="main.js"></script>
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+        // Register service worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    })
+                    .catch(function(error) {
+                        console.log('ServiceWorker registration failed: ', error);
+                    });
+            });
+        }
+    </script>
+
+<script>
+    // Check authentication
+    if (!window.api.isAuthenticated()) {
+        window.location.href = 'login.html';
+    }
+
+    // Logout handler
+    document.getElementById('logout-link').addEventListener('click', function(e) {
+        e.preventDefault();
+        window.api.logout();
+    });
+
+    // Currency symbols mapping
+    const currencySymbols = {
+        'USD': '$', 'EUR': '€', 'GBP': '£', 'INR': '₹', 'JPY': '¥',
+        'CAD': 'C$', 'AUD': 'A$', 'CNY': '¥', 'CHF': 'CHF', 'SGD': 'S$'
+    };
+
+    // Get invoice ID from URL
+    function getInvoiceIdFromUrl() {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get('id');
+    }
+
+    // Load invoice data
+    async function loadInvoice() {
+        const invoiceId = getInvoiceIdFromUrl();
+        
+        if (!invoiceId) {
+            window.api.showAlert('No invoice ID provided', 'error');
+            window.location.href = 'invoices.html';
+            return;
+        }
+
+        try {
+            const [invoiceResponse, userResponse] = await Promise.all([
+                window.api.getInvoice(invoiceId),
+                window.api.getUser()
+            ]);
+
+            const invoice = invoiceResponse.invoice;
+            const user = userResponse.user;
+
+            // Update page title and header
+            document.title = `Invoice ${invoice.invoice_number} - InvoiceGen`;
+            document.getElementById('invoice-number-display').textContent = invoice.invoice_number;
+            document.getElementById('invoice-id-display').textContent = invoice.id;
+
+            // Populate company information
+            document.getElementById('company-name').textContent = user.company_name || 'Your Company';
+            document.getElementById('company-tagline').textContent = 'Professional Services';
+            
+            let companyDetails = '';
+            if (user.company_address) {
+                companyDetails += `<p class="mb-1"><i class="fas fa-map-marker-alt me-2"></i>${user.company_address}</p>`;
+            }
+            if (user.company_phone) {
+                companyDetails += `<p class="mb-1"><i class="fas fa-phone me-2"></i>${user.company_phone}</p>`;
+            }
+            if (user.company_registration) {
+                companyDetails += `<p class="mb-1"><i class="fas fa-id-card me-2"></i>${user.company_registration}</p>`;
+            }
+            companyDetails += `<p class="mb-0"><i class="fas fa-envelope me-2"></i>${user.email}</p>`;
+            document.getElementById('from-details').innerHTML = companyDetails;
+
+            // Populate invoice information
+            document.getElementById('issue-date-display').textContent = window.api.formatDate(invoice.issue_date);
+            document.getElementById('due-date-display').textContent = window.api.formatDate(invoice.due_date);
+
+            // Populate client information
+            let billToDetails = `
+                <h6 class="fw-bold mb-2">${invoice.client_name}</h6>
+            `;
+            if (invoice.client_company) {
+                billToDetails += `<p class="mb-1"><i class="fas fa-building me-2"></i>${invoice.client_company}</p>`;
+            }
+            if (invoice.client_email) {
+                billToDetails += `<p class="mb-1"><i class="fas fa-envelope me-2"></i>${invoice.client_email}</p>`;
+            }
+            if (invoice.client_phone) {
+                billToDetails += `<p class="mb-1"><i class="fas fa-phone me-2"></i>${invoice.client_phone}</p>`;
+            }
+            if (invoice.client_address) {
+                billToDetails += `<p class="mb-0"><i class="fas fa-map-marker-alt me-2"></i>${invoice.client_address}</p>`;
+            }
+            document.getElementById('bill-to-details').innerHTML = billToDetails;
+
+            // Populate items
+            const itemsContainer = document.getElementById('invoice-items');
+            const symbol = currencySymbols[invoice.currency] || invoice.currency;
+            
+            itemsContainer.innerHTML = invoice.items.map(item => `
+                <tr>
+                    <td>${item.description}</td>
+                    <td class="text-center">${item.quantity}</td>
+                    <td class="text-end">${symbol}${item.price.toFixed(2)}</td>
+                    <td class="text-end fw-bold">${symbol}${item.total.toFixed(2)}</td>
+                </tr>
+            `).join('');
+
+            // Populate totals
+            document.getElementById('subtotal-display').textContent = `${symbol}${invoice.subtotal.toFixed(2)}`;
+            
+            if (invoice.tax_rate > 0) {
+                document.getElementById('tax-row').style.display = 'flex';
+                document.getElementById('tax-label').textContent = `Tax (${invoice.tax_rate.toFixed(1)}%):`;
+                document.getElementById('tax-amount-display').textContent = `${symbol}${invoice.tax_amount.toFixed(2)}`;
+            }
+            
+            document.getElementById('total-amount-display').textContent = `${symbol}${invoice.total.toFixed(2)}`;
+
+            // Populate notes and payment instructions
+            if (invoice.notes) {
+                document.getElementById('notes-section').style.display = 'block';
+                document.getElementById('invoice-notes').textContent = invoice.notes;
+            }
+            
+            if (invoice.payment_method) {
+                document.getElementById('payment-info-section').style.display = 'block';
+                let paymentInfo = `
+                    <p class="mb-1"><strong>Method:</strong> ${invoice.payment_method}</p>
+                `;
+                if (invoice.payment_terms) {
+                    paymentInfo += `<p class="mb-0"><strong>Terms:</strong> ${invoice.payment_terms}</p>`;
+                }
+                document.getElementById('payment-instructions').innerHTML = paymentInfo;
+            }
+
+            // Set generated date
+            document.getElementById('generated-date').textContent = new Date().toLocaleDateString();
+
+            // Update status
+            updateInvoiceStatus(invoice);
+
+        } catch (error) {
+            window.api.showAlert('Failed to load invoice: ' + error.message, 'error');
+            window.location.href = 'invoices.html';
+        }
+    }
+
+    // Update invoice status display
+    function updateInvoiceStatus(invoice) {
+        const statusAlert = document.getElementById('status-alert');
+        const dueDate = new Date(invoice.due_date);
+        const today = new Date();
+        const isOverdue = dueDate < today && invoice.status !== 'paid';
+
+        let alertClass = '';
+        let icon = '';
+        let message = '';
+        let showMarkAsPaid = false;
+
+        if (invoice.status === 'paid') {
+            alertClass = 'alert-success';
+            icon = 'fa-check-circle';
+            const paymentDate = invoice.payment_date ? window.api.formatDate(invoice.payment_date) : window.api.formatDate(invoice.due_date);
+            message = `<strong>Payment Received!</strong> This invoice was paid on ${paymentDate}.`;
+            showMarkAsPaid = false;
+        } else if (isOverdue) {
+            alertClass = 'alert-danger';
+            icon = 'fa-exclamation-triangle';
+            message = `<strong>Overdue!</strong> This invoice was due on ${window.api.formatDate(invoice.due_date)}.`;
+            showMarkAsPaid = true;
+        } else {
+            alertClass = 'alert-warning';
+            icon = 'fa-clock';
+            message = `<strong>Pending Payment</strong> - Due on ${window.api.formatDate(invoice.due_date)}`;
+            showMarkAsPaid = true;
+        }
+
+        statusAlert.innerHTML = `
+            <div class="alert ${alertClass} d-flex align-items-center" role="alert">
+                <i class="fas ${icon} me-3 fa-lg"></i>
+                <div class="flex-grow-1">
+                    ${message}
+                </div>
+                ${showMarkAsPaid ? `
+                    <button class="btn btn-sm btn-outline-${isOverdue ? 'danger' : 'warning'}" onclick="markAsPaid()">
+                        <i class="fas fa-check me-1"></i>Mark as Paid
+                    </button>
+                ` : ''}
+            </div>
+        `;
+    }
+
+    // REAL IMPLEMENTATION: Mark invoice as paid
+    async function markAsPaid() {
+        const invoiceId = getInvoiceIdFromUrl();
+        
+        if (!confirm('Mark this invoice as paid? This action cannot be undone.')) {
+            return;
+        }
+        
+        try {
+            const response = await window.api.updateInvoiceStatus(invoiceId, 'paid');
+            window.api.showAlert('Invoice marked as paid successfully!', 'success');
+            
+            // Reload the page to reflect changes
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } catch (error) {
+            window.api.showAlert('Failed to update invoice: ' + error.message, 'error');
+        }
+    }
+
+    // REAL IMPLEMENTATION: Send to client
+    async function sendToClient() {
+        const invoiceId = getInvoiceIdFromUrl();
+        
+        try {
+            // Get invoice data first to confirm client email
+            const invoiceResponse = await window.api.getInvoice(invoiceId);
+            const invoice = invoiceResponse.invoice;
+            
+            let clientEmail = invoice.client_email;
+            
+            // If no client email in invoice, prompt user
+            if (!clientEmail) {
+                clientEmail = prompt('Please enter client email address:');
+                if (!clientEmail) {
+                    return; // User cancelled
+                }
+                
+                // Validate email format
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(clientEmail)) {
+                    window.api.showAlert('Please enter a valid email address', 'error');
+                    return;
+                }
+            }
+            
+            // Confirm before sending
+            if (!confirm(`Send invoice to ${clientEmail}?`)) {
+                return;
+            }
+            
+            // Show loading state
+            const button = document.querySelector('.btn-send');
+            const originalText = button.innerHTML;
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
+            
+            // Send invoice
+            const response = await window.api.sendInvoiceToClient(invoiceId, clientEmail);
+            
+            window.api.showAlert(`Invoice sent successfully to ${clientEmail}!`, 'success');
+            
+        } catch (error) {
+            window.api.showAlert('Failed to send invoice: ' + error.message, 'error');
+        } finally {
+            // Restore button state
+            const button = document.querySelector('.btn-send');
+            if (button) {
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-paper-plane me-2"></i>Send to Client';
+            }
+        }
+    }
+
+    // Print invoice
+    function printInvoice() {
+        window.print();
+    }
+
+    // REAL IMPLEMENTATION: Download PDF using backend generation
+    async function downloadPDF() {
+        const invoiceId = getInvoiceIdFromUrl();
+        if (!invoiceId) return;
+
+        const button = document.querySelector('.btn-download');
+        const originalText = button.innerHTML;
+
+        // Show loading state
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Generating PDF...';
+
+        try {
+            // Use backend PDF generation for better quality and consistency
+            await window.api.downloadInvoicePDF(invoiceId);
+            window.api.showAlert('PDF downloaded successfully!', 'success');
+        } catch (error) {
+            console.error('PDF download error:', error);
+            // Fallback to HTML2PDF if backend fails
+            window.api.showAlert('Using fallback PDF generation...', 'warning');
+            await downloadPDFFallback();
+        } finally {
+            button.disabled = false;
+            button.innerHTML = originalText;
+        }
+    }
+
+    // Fallback PDF generation using HTML2PDF
+    async function downloadPDFFallback() {
+        const invoiceId = getInvoiceIdFromUrl();
+        
+        try {
+            const invoiceResponse = await window.api.getInvoice(invoiceId);
+            const invoice = invoiceResponse.invoice;
+
+            const element = document.getElementById('invoice-content');
+            const opt = {
+                margin: 10,
+                filename: `invoice_${invoice.invoice_number}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { 
+                    scale: 2,
+                    useCORS: true,
+                    logging: false
+                },
+                jsPDF: { 
+                    unit: 'mm', 
+                    format: 'a4', 
+                    orientation: 'portrait' 
+                }
+            };
+
+            await html2pdf().set(opt).from(element).save();
+        } catch (fallbackError) {
+            window.api.showAlert('PDF generation failed: ' + fallbackError.message, 'error');
+        }
+    }
+
+    // Load invoice when page loads
+    document.addEventListener('DOMContentLoaded', loadInvoice);
+</script>
+</body>
+</html>

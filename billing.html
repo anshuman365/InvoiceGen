@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billing & Payments - InvoiceGen | Manage Your Account</title>
+    <meta name="description" content="Manage your InvoiceGen billing, upgrade to premium, add funds, and track your usage. Choose from free, pro, or business plans.">
+    <meta name="keywords" content="invoice billing, premium upgrade, payment plans, account management">
+    
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:title" content="Billing & Payments - InvoiceGen">
+    <meta property="og:description" content="Manage your InvoiceGen billing, upgrade to premium, add funds, and track your usage.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://invoicegen.example.com/billing.html">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3498db">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="InvoiceGen">
+    <link rel="apple-touch-icon" href="images/icons/icon-192x192.png">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="images/icons/favicon-16x16.png">
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Razorpay -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    
+    <!-- Custom Styles -->
+    <link href="style.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="dashboard.html">
+                <i class="fas fa-file-invoice-dollar"></i> InvoiceGen
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.html">
+                            <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="invoices.html">
+                            <i class="fas fa-file-invoice me-1"></i> Invoices
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="create-invoice.html">
+                            <i class="fas fa-plus-circle me-1"></i> Create Invoice
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="billing.html">
+                            <i class="fas fa-wallet me-1"></i> Billing
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle me-1"></i> Account
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="settings.html"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="logout-link"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container-fluid py-4">
+        <div class="container">
+            <!-- Header -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="h3 fw-bold text-primary mb-1">Billing & Payments</h1>
+                            <p class="text-muted mb-0">Manage your account and billing preferences</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-primary" id="refresh-btn">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Current Plan & Balance -->
+            <div class="row mb-4">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header bg-transparent">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-credit-card me-2 text-primary"></i>Account Summary
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="card bg-primary bg-opacity-10 border-primary">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-gift fa-2x text-primary mb-3"></i>
+                                            <h6 class="card-title">Free Invoices</h6>
+                                            <h3 class="text-primary" id="free-invoices-count">0</h3>
+                                            <small class="text-muted">Remaining This Month</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-success bg-opacity-10 border-success">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-wallet fa-2x text-success mb-3"></i>
+                                            <h6 class="card-title">Account Balance</h6>
+                                            <h3 class="text-success" id="account-balance">₹0.00</h3>
+                                            <small class="text-muted">Available Funds</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-info bg-opacity-10 border-info">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-file-invoice fa-2x text-info mb-3"></i>
+                                            <h6 class="card-title">Total Invoices</h6>
+                                            <h3 class="text-info" id="total-invoices-created">0</h3>
+                                            <small class="text-muted">Created</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Current Plan -->
+                            <div class="mt-4 p-4 bg-light rounded-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="fw-semibold mb-1">Current Plan</h6>
+                                        <p class="text-muted mb-0" id="current-plan-details">Free Plan - 10 invoices per month</p>
+                                    </div>
+                                    <div id="plan-badge-container">
+                                        <span class="badge bg-secondary" id="plan-badge">Free</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Add Funds -->
+                    <div class="card mt-4">
+                        <div class="card-header bg-transparent">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-plus-circle me-2 text-primary"></i>Add Funds to Account
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="add-funds-form">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold">Amount (₹)</label>
+                                        <input type="number" class="form-control" id="funds-amount" value="100" min="10" step="10" required>
+                                        <div class="form-text">Minimum amount: ₹10</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold">Payment Method</label>
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="radio" name="paymentMethod" id="razorpayMethod" value="razorpay" checked>
+                                            <label class="form-check-label" for="razorpayMethod">
+                                                <i class="fab fa-cc-visa"></i> Credit/Debit Card, UPI, Net Banking
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="paymentMethod" id="googlePayMethod" value="googlepay">
+                                            <label class="form-check-label" for="googlePayMethod">
+                                                <i class="fab fa-google-pay"></i> Google Pay
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-3">
+                                    <button type="submit" class="btn btn-success w-100 py-2">
+                                        <i class="fas fa-credit-card me-2"></i>Proceed to Payment
+                                    </button>
+                                </div>
+                            </form>
+                            
+                            <!-- Quick Amount Buttons -->
+                            <div class="mt-3">
+                                <label class="form-label fw-semibold">Quick Add:</label>
+                                <div class="btn-group w-100" role="group">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="setAmount(50)">₹50</button>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="setAmount(100)">₹100</button>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="setAmount(500)">₹500</button>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="setAmount(1000)">₹1000</button>
+                                </div>
+                            </div>
+
+                            <div class="mt-3">
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Secure payments powered by Razorpay. Your financial information is encrypted and secure.
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Premium & Usage -->
+                <div class="col-lg-4">
+                    <!-- Premium Upgrade -->
+                    <div class="card mb-4" id="premium-section">
+                        <div class="card-header bg-warning text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-crown me-2"></i>Go Premium
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-title">Unlimited Invoices</h6>
+                            <p class="card-text">Get unlimited invoice creation for just:</p>
+                            <h3 class="text-center text-primary">₹499<small class="text-muted">/month</small></h3>
+                            <ul class="list-unstyled mt-3">
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Unlimited invoices</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Priority support</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Advanced analytics</li>
+                                <li class="mb-2"><i class="fas fa-check text-success me-2"></i> Custom branding</li>
+                                <li class="mb-0"><i class="fas fa-check text-success me-2"></i> Recurring invoices</li>
+                            </ul>
+
+                            <!-- Payment Method for Premium -->
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Payment Method:</label>
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" name="premiumPaymentMethod" id="premiumRazorpay" value="razorpay" checked>
+                                    <label class="form-check-label" for="premiumRazorpay">
+                                        Card/UPI/Net Banking
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="premiumPaymentMethod" id="premiumGooglePay" value="googlepay">
+                                    <label class="form-check-label" for="premiumGooglePay">
+                                        Google Pay
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <button id="upgrade-premium" class="btn btn-warning w-100 py-2">
+                                <i class="fas fa-crown me-2"></i>Upgrade to Premium - ₹499
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Payment History -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-transparent">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-history me-2 text-primary"></i>Recent Payments
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="payment-history">
+                                <div class="text-center py-3">
+                                    <i class="fas fa-receipt fa-2x text-muted mb-2"></i>
+                                    <p class="text-muted mb-0">No payment history yet</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Usage Statistics -->
+                    <div class="card">
+                        <div class="card-header bg-transparent">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-chart-bar me-2 text-primary"></i>Usage Statistics
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <strong>Total Invoices Created:</strong>
+                                    <span id="usage-total-invoices">0</span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <strong>Free Invoices Used:</strong>
+                                    <span id="free-invoices-used">0/10</span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <strong>Paid Invoices:</strong>
+                                    <span id="paid-invoices">0</span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between">
+                                    <strong>Total Spent:</strong>
+                                    <span id="total-spent">₹0.00</span>
+                                </div>
+                            </div>
+                            <div class="alert alert-warning mt-3" id="next-payment-alert" style="display: none;">
+                                <small>
+                                    <i class="fas fa-exclamation-triangle me-1"></i>
+                                    <strong>Next invoice will cost:</strong> ₹1.00
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Payment Processing Modal -->
+    <div class="modal fade" id="paymentModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="paymentModalLabel">Processing Payment</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div id="payment-processing">
+                        <i class="fas fa-spinner fa-spin fa-3x text-primary mb-3"></i>
+                        <p>Redirecting to payment gateway...</p>
+                    </div>
+                    <div id="payment-success" style="display: none;">
+                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                        <p class="text-success">Payment Successful!</p>
+                    </div>
+                    <div id="payment-failed" style="display: none;">
+                        <i class="fas fa-times-circle fa-3x text-danger mb-3"></i>
+                        <p class="text-danger">Payment Failed</p>
+                        <p id="error-message" class="text-muted"></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="close-modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="retry-payment" style="display: none;">Retry Payment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <p class="mb-0">&copy; 2023 InvoiceGen. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="main.js"></script>
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+        // Register service worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    })
+                    .catch(function(error) {
+                        console.log('ServiceWorker registration failed: ', error);
+                    });
+            });
+        }
+    </script>
+
+    <script>
+        // Check authentication
+        if (!window.api.isAuthenticated()) {
+            window.location.href = 'login.html';
+        }
+
+        // Logout handler
+        document.getElementById('logout-link').addEventListener('click', function(e) {
+            e.preventDefault();
+            window.api.logout();
+        });
+
+        let currentPaymentData = null;
+
+        // Refresh button handler
+        document.getElementById('refresh-btn').addEventListener('click', function() {
+            const button = this;
+            const icon = button.querySelector('i');
+            
+            // Add spinning animation
+            icon.classList.add('fa-spin');
+            loadBillingData();
+            
+            // Remove spinning after 2 seconds
+            setTimeout(() => {
+                icon.classList.remove('fa-spin');
+            }, 2000);
+        });
+
+        // Quick amount buttons
+        function setAmount(amount) {
+            document.getElementById('funds-amount').value = amount;
+        }
+
+        // Load billing data
+        async function loadBillingData() {
+            try {
+                const [userResponse, invoicesResponse] = await Promise.all([
+                    window.api.getUser(),
+                    window.api.getInvoices()
+                ]);
+
+                const user = userResponse.user;
+                const invoices = invoicesResponse.invoices;
+
+                // Update account summary
+                document.getElementById('free-invoices-count').textContent = user.free_invoices_remaining;
+                document.getElementById('account-balance').textContent = `₹${user.account_balance.toFixed(2)}`;
+                document.getElementById('total-invoices-created').textContent = user.total_invoices_created;
+
+                // Update current plan
+                const currentPlanDetails = document.getElementById('current-plan-details');
+                const planBadge = document.getElementById('plan-badge');
+                
+                if (user.is_premium) {
+                    currentPlanDetails.textContent = 'Premium Plan - Unlimited invoices';
+                    planBadge.textContent = 'Premium';
+                    planBadge.className = 'badge bg-warning';
+                } else {
+                    currentPlanDetails.textContent = `Free Plan - ${user.free_invoices_remaining} invoices remaining this month`;
+                    planBadge.textContent = 'Free';
+                    planBadge.className = 'badge bg-secondary';
+                }
+
+                // Update usage statistics
+                document.getElementById('usage-total-invoices').textContent = user.total_invoices_created;
+                const freeInvoicesUsed = Math.max(0, 10 - user.free_invoices_remaining);
+                document.getElementById('free-invoices-used').textContent = `${freeInvoicesUsed}/10`;
+                const paidInvoices = Math.max(0, user.total_invoices_created - 10);
+                document.getElementById('paid-invoices').textContent = paidInvoices;
+                document.getElementById('total-spent').textContent = `₹${paidInvoices.toFixed(2)}`;
+
+                // Show/hide next payment alert
+                if (user.free_invoices_remaining <= 0 && !user.is_premium) {
+                    document.getElementById('next-payment-alert').style.display = 'block';
+                } else {
+                    document.getElementById('next-payment-alert').style.display = 'none';
+                }
+
+                // Update premium section if user is already premium
+                if (user.is_premium) {
+                    const premiumSection = document.getElementById('premium-section');
+                    premiumSection.innerHTML = `
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-crown me-2"></i>Premium Active
+                            </h5>
+                        </div>
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-check-circle fa-3x text-success"></i>
+                            </div>
+                            <h6 class="text-success">You're enjoying premium benefits!</h6>
+                            <p class="text-muted mb-3">Unlimited invoices with all premium features</p>
+                            <div class="small text-muted">
+                                Next billing: ${new Date(new Date().setMonth(new Date().getMonth() + 1)).toLocaleDateString()}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Update payment history
+                updatePaymentHistory(user);
+
+            } catch (error) {
+                window.api.showAlert('Failed to load billing data: ' + error.message, 'error');
+            }
+        }
+
+        // Update payment history
+        function updatePaymentHistory(user) {
+            const paymentHistory = document.getElementById('payment-history');
+            
+            // Mock payment history - in real app, this would come from API
+            const mockPayments = [
+                { type: 'premium', amount: 499, date: '2023-10-15', status: 'completed' },
+                { type: 'add_funds', amount: 500, date: '2023-10-10', status: 'completed' },
+                { type: 'invoice', amount: 1, date: '2023-10-05', status: 'completed' }
+            ];
+
+            if (mockPayments.length === 0) {
+                paymentHistory.innerHTML = `
+                    <div class="text-center py-3">
+                        <i class="fas fa-receipt fa-2x text-muted mb-2"></i>
+                        <p class="text-muted mb-0">No payment history yet</p>
+                    </div>
+                `;
+                return;
+            }
+
+            paymentHistory.innerHTML = mockPayments.map(payment => `
+                <div class="transaction-item d-flex justify-content-between align-items-center mb-3 p-2 border-bottom">
+                    <div>
+                        <p class="mb-1 small fw-semibold">
+                            ${payment.type === 'premium' ? 'Premium Upgrade' : 
+                              payment.type === 'add_funds' ? 'Funds Added' : 'Invoice Charge'}
+                        </p>
+                        <small class="text-muted">${new Date(payment.date).toLocaleDateString()}</small>
+                    </div>
+                    <div class="text-end">
+                        <span class="d-block fw-semibold ${payment.type === 'add_funds' ? 'text-success' : 'text-danger'}">
+                            ${payment.type === 'add_funds' ? '+' : '-'}₹${payment.amount.toFixed(2)}
+                        </span>
+                        <small class="badge bg-success">Completed</small>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Create Razorpay order and process payment
+        async function processRazorpayPayment(amount, paymentType, userData) {
+            try {
+                showPaymentModal('processing');
+                
+                console.log('Creating payment order for:', amount, paymentType);
+                
+                // Create order on server using the new payment function
+                const orderData = await window.api.createPaymentOrder(amount, paymentType);
+
+                console.log('Order created:', orderData);
+
+                // Razorpay options
+                const options = {
+                    key: orderData.key_id,
+                    amount: orderData.amount,
+                    currency: orderData.currency,
+                    name: 'InvoiceGen',
+                    description: paymentType === 'add_funds' ? `Add ₹${amount} to account` : 'Premium Subscription',
+                    order_id: orderData.order_id,
+                    handler: async function(response) {
+                        // Payment successful - verify on server
+                        try {
+                            console.log('Payment successful, verifying:', response);
+                            
+                            const verifyData = await window.api.verifyPayment(
+                                response.razorpay_order_id,
+                                response.razorpay_payment_id,
+                                response.razorpay_signature,
+                                paymentType,
+                                amount
+                            );
+
+                            console.log('Payment verified:', verifyData);
+
+                            if (verifyData.success) {
+                                showPaymentModal('success');
+                                window.api.showAlert(verifyData.message, 'success');
+                                
+                                // Update local storage
+                                const currentUser = window.api.getCurrentUser();
+                                currentUser.account_balance = verifyData.user.account_balance;
+                                currentUser.is_premium = verifyData.user.is_premium;
+                                localStorage.setItem('user', JSON.stringify(currentUser));
+                                
+                                // Reload billing data
+                                setTimeout(() => {
+                                    loadBillingData();
+                                    const modal = bootstrap.Modal.getInstance(document.getElementById('paymentModal'));
+                                    if (modal) modal.hide();
+                                }, 2000);
+                            } else {
+                                throw new Error(verifyData.error || 'Payment verification failed');
+                            }
+                        } catch (error) {
+                            console.error('Payment verification error:', error);
+                            showPaymentModal('failed', error.message);
+                        }
+                    },
+                    prefill: {
+                        name: userData.company_name || 'User',
+                        email: userData.email,
+                        contact: userData.company_phone || ''
+                    },
+                    notes: {
+                        payment_type: paymentType
+                    },
+                    theme: {
+                        color: '#3498db'
+                    }
+                };
+
+                const rzp = new Razorpay(options);
+                rzp.open();
+
+                rzp.on('payment.failed', function(response) {
+                    console.error('Payment failed:', response);
+                    showPaymentModal('failed', response.error.description || 'Payment failed');
+                });
+
+            } catch (error) {
+                console.error('Payment processing error:', error);
+                showPaymentModal('failed', error.message);
+            }
+        }
+
+        // Show payment modal with different states
+        function showPaymentModal(state, errorMessage = '') {
+            const modalElement = document.getElementById('paymentModal');
+            const modal = new bootstrap.Modal(modalElement);
+            const processing = document.getElementById('payment-processing');
+            const success = document.getElementById('payment-success');
+            const failed = document.getElementById('payment-failed');
+            const errorMsg = document.getElementById('error-message');
+            const retryBtn = document.getElementById('retry-payment');
+            const closeBtn = document.getElementById('close-modal');
+
+            processing.style.display = 'none';
+            success.style.display = 'none';
+            failed.style.display = 'none';
+            retryBtn.style.display = 'none';
+
+            switch (state) {
+                case 'processing':
+                    processing.style.display = 'block';
+                    closeBtn.style.display = 'none';
+                    break;
+                case 'success':
+                    success.style.display = 'block';
+                    closeBtn.style.display = 'block';
+                    break;
+                case 'failed':
+                    failed.style.display = 'block';
+                    errorMsg.textContent = errorMessage;
+                    retryBtn.style.display = 'block';
+                    closeBtn.style.display = 'block';
+                    break;
+            }
+
+            modal.show();
+        }
+
+        // Add funds with real payment
+        document.getElementById('add-funds-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const amount = parseFloat(document.getElementById('funds-amount').value);
+            const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+            
+            if (amount < 10) {
+                window.api.showAlert('Minimum amount is ₹10', 'error');
+                return;
+            }
+
+            try {
+                const userResponse = await window.api.getUser();
+                const user = userResponse.user;
+
+                if (paymentMethod === 'razorpay') {
+                    await processRazorpayPayment(amount, 'add_funds', user);
+                } else if (paymentMethod === 'googlepay') {
+                    // Google Pay integration would go here
+                    window.api.showAlert('Google Pay integration coming soon!', 'info');
+                }
+                
+            } catch (error) {
+                window.api.showAlert('Payment failed: ' + error.message, 'error');
+            }
+        });
+
+        // Upgrade to premium with real payment
+        document.getElementById('upgrade-premium').addEventListener('click', async function() {
+            const button = this;
+            const paymentMethod = document.querySelector('input[name="premiumPaymentMethod"]:checked').value;
+            
+            if (!confirm('Are you sure you want to upgrade to premium for ₹499?')) {
+                return;
+            }
+
+            try {
+                const userResponse = await window.api.getUser();
+                const user = userResponse.user;
+
+                if (paymentMethod === 'razorpay') {
+                    await processRazorpayPayment(499, 'premium', user);
+                } else if (paymentMethod === 'googlepay') {
+                    // Google Pay integration would go here
+                    window.api.showAlert('Google Pay integration coming soon!', 'info');
+                }
+                
+            } catch (error) {
+                window.api.showAlert('Upgrade failed: ' + error.message, 'error');
+            }
+        });
+
+        // Retry payment
+        document.getElementById('retry-payment').addEventListener('click', function() {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('paymentModal'));
+            if (modal) modal.hide();
+        });
+
+        // Close modal handler
+        document.getElementById('close-modal').addEventListener('click', function() {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('paymentModal'));
+            if (modal) modal.hide();
+        });
+
+        // Load data when page loads
+        document.addEventListener('DOMContentLoaded', loadBillingData);
+    </script>
+</body>
+</html>

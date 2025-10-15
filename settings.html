@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - InvoiceGen | Account Configuration</title>
+    <meta name="description" content="Configure your InvoiceGen account settings, company information, and preferences. Customize your invoicing experience.">
+    <meta name="keywords" content="invoice settings, account configuration, company setup, preferences">
+    
+    <!-- Open Graph / Social Media Meta Tags -->
+    <meta property="og:title" content="Settings - InvoiceGen">
+    <meta property="og:description" content="Configure your InvoiceGen account settings, company information, and preferences.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://invoicegen.example.com/settings.html">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3498db">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="InvoiceGen">
+    <link rel="apple-touch-icon" href="images/icons/icon-192x192.png">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="icon" type="image/png" sizes="32x32" href="images/icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="images/icons/favicon-16x16.png">
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom Styles -->
+    <link href="style.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="dashboard.html">
+                <i class="fas fa-file-invoice-dollar"></i> InvoiceGen
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.html">
+                            <i class="fas fa-tachometer-alt me-1"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="invoices.html">
+                            <i class="fas fa-file-invoice me-1"></i> Invoices
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="create-invoice.html">
+                            <i class="fas fa-plus-circle me-1"></i> Create Invoice
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="billing.html">
+                            <i class="fas fa-wallet me-1"></i> Billing
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="settings.html">
+                            <i class="fas fa-cog me-1"></i> Settings
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle me-1"></i> Account
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="settings.html"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="logout-link"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container-fluid py-4">
+        <div class="container">
+            <!-- Header -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="h3 fw-bold text-primary mb-1">Account Settings</h1>
+                            <p class="mb-0">Manage your company information and preferences</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-primary" id="refresh-btn">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Company Settings -->
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header bg-transparent">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-building me-2 text-primary"></i>Company Information
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="settings-form">
+                                <div class="row g-3">
+                                    <div class="col-12">
+                                        <label class="form-label fw-semibold">Company Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="company-name" 
+                                               placeholder="Your Company Name" required>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label fw-semibold">Company Address</label>
+                                        <textarea class="form-control" id="company-address" rows="3" 
+                                                  placeholder="Your company address"></textarea>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold">Company Registration (GSTIN/PAN)</label>
+                                        <input type="text" class="form-control" id="company-registration" 
+                                               placeholder="09ABCDE1234F1Z2">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label fw-semibold">Company Phone</label>
+                                        <input type="text" class="form-control" id="company-phone" 
+                                               placeholder="+1-234-567-8900">
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label fw-semibold">Default Currency</label>
+                                        <select class="form-select" id="default-currency">
+                                            <option value="USD">USD - US Dollar ($)</option>
+                                            <option value="EUR">EUR - Euro (€)</option>
+                                            <option value="GBP">GBP - British Pound (£)</option>
+                                            <option value="INR">INR - Indian Rupee (₹)</option>
+                                            <option value="JPY">JPY - Japanese Yen (¥)</option>
+                                            <option value="CAD">CAD - Canadian Dollar (C$)</option>
+                                            <option value="AUD">AUD - Australian Dollar (A$)</option>
+                                            <option value="CNY">CNY - Chinese Yuan (¥)</option>
+                                            <option value="CHF">CHF - Swiss Franc (CHF)</option>
+                                            <option value="SGD">SGD - Singapore Dollar (S$)</option>
+                                        </select>
+                                        <div class="form-text">
+                                            This will be the default currency for new invoices and dashboard reporting.
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <hr class="my-4">
+                                        <div class="d-flex gap-2">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-save me-2"></i>Save Settings
+                                            </button>
+                                            <a href="dashboard.html" class="btn btn-outline-secondary">Cancel</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Invoice Templates -->
+                    <div class="card mt-4">
+                        <div class="card-header bg-transparent">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-palette me-2 text-primary"></i>Invoice Templates
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="card template-card border-2">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-file-invoice fa-3x text-primary mb-3"></i>
+                                            <h6>Professional</h6>
+                                            <p class="small">Clean and modern design</p>
+                                            <button class="btn btn-outline-primary btn-sm">Select</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card template-card border-primary">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-receipt fa-3x text-primary mb-3"></i>
+                                            <h6>Minimal</h6>
+                                            <p class="small">Simple and elegant</p>
+                                            <button class="btn btn-primary btn-sm">Active</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card template-card border-2">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-building fa-3x text-primary mb-3"></i>
+                                            <h6>Corporate</h6>
+                                            <p class="small">Formal business style</p>
+                                            <button class="btn btn-outline-primary btn-sm">Select</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card template-card border-2">
+                                        <div class="card-body text-center">
+                                            <i class="fas fa-brush fa-3x text-primary mb-3"></i>
+                                            <h6>Creative</h6>
+                                            <p class="small">For creative businesses</p>
+                                            <button class="btn btn-outline-primary btn-sm">Select</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Account Information & Support -->
+                <div class="col-lg-4">
+                    <!-- Account Information -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-transparent">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-user-circle me-2 text-primary"></i>Account Information
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <strong>Email:</strong>
+                                <div class="" style="color:#f8f9fa" id="user-email">Loading...</div>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Member since:</strong>
+                                <div class="" style="color:#f8f9fa" id="member-since">Loading...</div>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Total Invoices:</strong>
+                                <div class="" style="color:#f8f9fa" id="total-invoices-count">Loading...</div>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Account Type:</strong>
+                                <div>
+                                    <span id="account-type" class="badge bg-secondary">Loading...</span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <strong>Plan Renewal:</strong>
+                                <div class="" style="color:#f8f9fa" id="plan-renewal">-</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Supported Currencies -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-transparent">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-money-bill-wave me-2 text-primary"></i>Supported Currencies
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <div class="currency-card card bg-light border-0">
+                                        <div class="card-body text-center py-2">
+                                            <strong style="color:#878787;">USD</strong>
+                                            <div class="text-muted small">$</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="currency-card card bg-light border-0">
+                                        <div class="card-body text-center py-2">
+                                            <strong style="color:#878787;">EUR</strong>
+                                            <div class="text-muted small">€</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="currency-card card bg-light border-0">
+                                        <div class="card-body text-center py-2">
+                                            <strong style="color:#878787;">GBP</strong>
+                                            <div class="text-muted small">£</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="currency-card card bg-light border-0">
+                                        <div class="card-body text-center py-2">
+                                            <strong style="color:#878787;">INR</strong>
+                                            <div class="text-muted small">₹</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="currency-card card bg-light border-0">
+                                        <div class="card-body text-center py-2">
+                                            <strong style="color:#878787;">JPY</strong>
+                                            <div class="text-muted small">¥</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="currency-card card bg-light border-0">
+                                        <div class="card-body text-center py-2">
+                                            <strong style="color:#878787;">CAD</strong>
+                                            <div class="text-muted small">C$</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Support Card -->
+                    <div class="card bg-primary text-white">
+                        <div class="card-body text-center">
+                            <i class="fas fa-headset fa-2x mb-3"></i>
+                            <h6>Need Help?</h6>
+                            <p class="small mb-3">Our support team is here to assist you</p>
+                            <div class="d-grid gap-2">
+                                <a href="mailto:support@invoicegen.com" class="btn btn-light btn-sm">
+                                    <i class="fas fa-envelope me-1"></i>Email Support
+                                </a>
+                                <a href="#" class="btn btn-outline-light btn-sm">
+                                    <i class="fas fa-book me-1"></i>Help Center
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Data Management -->
+                    <div class="card mt-4">
+                        <div class="card-header bg-transparent">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-database me-2 text-primary"></i>Data Management
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-download me-2"></i>Export Data
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm">
+                                    <i class="fas fa-trash me-2"></i>Delete Account
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <p class="mb-0">&copy; 2023 InvoiceGen. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="main.js"></script>
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+        // Register service worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    })
+                    .catch(function(error) {
+                        console.log('ServiceWorker registration failed: ', error);
+                    });
+            });
+        }
+    </script>
+
+    <script>
+        // Check authentication
+        if (!window.api.isAuthenticated()) {
+            window.location.href = 'login.html';
+        }
+
+        // Logout handler
+        document.getElementById('logout-link').addEventListener('click', function(e) {
+            e.preventDefault();
+            window.api.logout();
+        });
+
+        // Refresh button handler
+        document.getElementById('refresh-btn').addEventListener('click', function() {
+            const button = this;
+            const icon = button.querySelector('i');
+            
+            // Add spinning animation
+            icon.classList.add('fa-spin');
+            loadUserData();
+            
+            // Remove spinning after 2 seconds
+            setTimeout(() => {
+                icon.classList.remove('fa-spin');
+            }, 2000);
+        });
+
+        // Load user data and settings
+        async function loadUserData() {
+            try {
+                const [userResponse, invoicesResponse] = await Promise.all([
+                    window.api.getUser(),
+                    window.api.getInvoices()
+                ]);
+
+                const user = userResponse.user;
+                const invoices = invoicesResponse.invoices;
+
+                // Populate form fields
+                document.getElementById('company-name').value = user.company_name || '';
+                document.getElementById('company-address').value = user.company_address || '';
+                document.getElementById('company-registration').value = user.company_registration || '';
+                document.getElementById('company-phone').value = user.company_phone || '';
+                document.getElementById('default-currency').value = user.default_currency || 'USD';
+
+                // Populate account info
+                document.getElementById('user-email').textContent = user.email;
+                document.getElementById('member-since').textContent = new Date(user.created_at).toLocaleDateString();
+                document.getElementById('total-invoices-count').textContent = invoices.length;
+                
+                const accountTypeBadge = document.getElementById('account-type');
+                if (user.is_premium) {
+                    accountTypeBadge.textContent = 'Premium';
+                    accountTypeBadge.className = 'badge bg-warning';
+                    document.getElementById('plan-renewal').textContent = 'Monthly (Auto-renew)';
+                } else {
+                    accountTypeBadge.textContent = 'Free';
+                    accountTypeBadge.className = 'badge bg-secondary';
+                    document.getElementById('plan-renewal').textContent = '-';
+                }
+
+            } catch (error) {
+                window.api.showAlert('Failed to load user data: ' + error.message, 'error');
+            }
+        }
+
+        // Save settings
+        document.getElementById('settings-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const settings = {
+                company_name: document.getElementById('company-name').value,
+                company_address: document.getElementById('company-address').value,
+                company_registration: document.getElementById('company-registration').value,
+                company_phone: document.getElementById('company-phone').value,
+                default_currency: document.getElementById('default-currency').value
+            };
+
+            const button = this.querySelector('button[type="submit"]');
+            
+            // Show loading state
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+
+            try {
+                await window.api.updateUserSettings(settings);
+                window.api.showAlert('Settings updated successfully!', 'success');
+                
+                // Update local storage user data
+                const currentUser = window.api.getCurrentUser();
+                const updatedUser = { ...currentUser, ...settings };
+                localStorage.setItem('user', JSON.stringify(updatedUser));
+                
+            } catch (error) {
+                window.api.showAlert('Failed to update settings: ' + error.message, 'error');
+            } finally {
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-save me-2"></i>Save Settings';
+            }
+        });
+
+        // Template selection
+        document.querySelectorAll('.template-card .btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Remove active state from all templates
+                document.querySelectorAll('.template-card').forEach(card => {
+                    card.classList.remove('border-primary');
+                    card.querySelector('.btn').classList.remove('btn-primary');
+                    card.querySelector('.btn').classList.add('btn-outline-primary');
+                    card.querySelector('.btn').textContent = 'Select';
+                });
+                
+                // Add active state to selected template
+                const card = this.closest('.template-card');
+                card.classList.add('border-primary');
+                this.classList.remove('btn-outline-primary');
+                this.classList.add('btn-primary');
+                this.textContent = 'Active';
+                
+                window.api.showAlert('Template updated successfully!', 'success');
+            });
+        });
+
+        // Load data when page loads
+        document.addEventListener('DOMContentLoaded', loadUserData);
+    </script>
+</body>
+</html>
