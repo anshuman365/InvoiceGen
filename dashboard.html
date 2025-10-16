@@ -38,6 +38,9 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
+    <!-- Date-fns for date manipulation -->
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/index.min.js"></script>
+    
     <!-- Custom Styles -->
     <link href="style.css" rel="stylesheet">
 </head>
@@ -195,8 +198,19 @@
                 <!-- Revenue Chart -->
                 <div class="col-lg-8 mb-4">
                     <div class="card h-100">
-                        <div class="card-header bg-transparent">
+                        <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
                             <h5 class="card-title mb-0">Revenue Overview</h5>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" id="chartPeriodDropdown">
+                                    Last 6 Months
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item chart-period" data-period="3">Last 3 Months</a></li>
+                                    <li><a class="dropdown-item chart-period active" data-period="6">Last 6 Months</a></li>
+                                    <li><a class="dropdown-item chart-period" data-period="12">Last 12 Months</a></li>
+                                    <li><a class="dropdown-item chart-period" data-period="0">All Time</a></li>
+                                </ul>
+                            </div>
                         </div>
                         <div class="card-body">
                             <div class="chart-container" style="position: relative; height: 300px;">
@@ -206,7 +220,7 @@
                     </div>
                 </div>
 
-                <!-- Quick Actions -->
+                <!-- Quick Actions & Status Distribution -->
                 <div class="col-lg-4 mb-4">
                     <div class="card h-100">
                         <div class="card-header bg-transparent">
@@ -239,6 +253,18 @@
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Status Distribution Chart -->
+                    <div class="card mt-4">
+                        <div class="card-header bg-transparent">
+                            <h5 class="card-title mb-0">Invoice Status</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-container" style="position: relative; height: 200px;">
+                                <canvas id="statusChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -264,7 +290,7 @@
                     </div>
                 </div>
 
-                <!-- Recent Activity -->
+                <!-- Recent Activity & Monthly Trends -->
                 <div class="col-lg-4 mb-4">
                     <div class="card">
                         <div class="card-header bg-transparent">
@@ -272,32 +298,42 @@
                         </div>
                         <div class="card-body">
                             <div class="activity-timeline" id="activity-timeline">
-                                <div class="activity-item d-flex mb-3">
-                                    <div class="activity-icon me-3">
-                                        <i class="fas fa-file-invoice text-primary"></i>
+                                <div class="text-center py-3">
+                                    <div class="spinner-border spinner-border-sm text-primary mb-2" role="status">
+                                        <span class="visually-hidden">Loading...</span>
                                     </div>
-                                    <div class="activity-content">
-                                        <p class="mb-1 small">New invoice created</p>
-                                        <small class="text-muted">2 hours ago</small>
+                                    <p class="text-muted small">Loading activities...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Monthly Trends -->
+                    <div class="card mt-4">
+                        <div class="card-header bg-transparent">
+                            <h5 class="card-title mb-0">Monthly Trends</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-6 mb-3">
+                                    <div class="border-end">
+                                        <h4 class="text-primary mb-1" id="current-month-invoices">0</h4>
+                                        <small class="text-muted">This Month</small>
                                     </div>
                                 </div>
-                                <div class="activity-item d-flex mb-3">
-                                    <div class="activity-icon me-3">
-                                        <i class="fas fa-user text-success"></i>
-                                    </div>
-                                    <div class="activity-content">
-                                        <p class="mb-1 small">Client added to database</p>
-                                        <small class="text-muted">1 day ago</small>
+                                <div class="col-6 mb-3">
+                                    <h4 class="text-success mb-1" id="current-month-revenue">$0</h4>
+                                    <small class="text-muted">This Month</small>
+                                </div>
+                                <div class="col-6">
+                                    <div class="border-end">
+                                        <h4 class="text-primary mb-1" id="last-month-invoices">0</h4>
+                                        <small class="text-muted">Last Month</small>
                                     </div>
                                 </div>
-                                <div class="activity-item d-flex mb-3">
-                                    <div class="activity-icon me-3">
-                                        <i class="fas fa-download text-info"></i>
-                                    </div>
-                                    <div class="activity-content">
-                                        <p class="mb-1 small">Invoice downloaded as PDF</p>
-                                        <small class="text-muted">2 days ago</small>
-                                    </div>
+                                <div class="col-6">
+                                    <h4 class="text-success mb-1" id="last-month-revenue">$0</h4>
+                                    <small class="text-muted">Last Month</small>
                                 </div>
                             </div>
                         </div>
@@ -356,6 +392,10 @@
             window.location.href = 'login.html';
         }
 
+        // Global variables for charts
+        let revenueChart, statusChart;
+        let currentChartPeriod = 6; // Default to 6 months
+
         // Logout handler
         document.getElementById('logout-link').addEventListener('click', function(e) {
             e.preventDefault();
@@ -377,8 +417,28 @@
             }, 2000);
         });
 
-        // Chart initialization
-        let revenueChart;
+        // Chart period selector
+        document.querySelectorAll('.chart-period').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Update active class
+                document.querySelectorAll('.chart-period').forEach(el => {
+                    el.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                // Update dropdown text
+                const periodText = this.textContent;
+                document.getElementById('chartPeriodDropdown').textContent = periodText;
+                
+                // Update chart period and reload
+                currentChartPeriod = parseInt(this.getAttribute('data-period'));
+                loadDashboard();
+            });
+        });
+
+        // Revenue Chart initialization
         function initRevenueChart(labels, data) {
             const ctx = document.getElementById('revenueChart').getContext('2d');
             
@@ -397,7 +457,11 @@
                         backgroundColor: 'rgba(52, 152, 219, 0.1)',
                         borderWidth: 2,
                         fill: true,
-                        tension: 0.4
+                        tension: 0.4,
+                        pointBackgroundColor: '#3498db',
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointRadius: 4
                     }]
                 },
                 options: {
@@ -406,6 +470,15 @@
                     plugins: {
                         legend: {
                             display: false
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return `Revenue: ${window.api.formatCurrency(context.parsed.y, defaultCurrency)}`;
+                                }
+                            }
                         }
                     },
                     scales: {
@@ -413,6 +486,11 @@
                             beginAtZero: true,
                             grid: {
                                 drawBorder: false
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return window.api.formatCurrency(value, defaultCurrency);
+                                }
                             }
                         },
                         x: {
@@ -425,25 +503,298 @@
             });
         }
 
+        // Status Chart initialization
+        function initStatusChart(statusData) {
+            const ctx = document.getElementById('statusChart').getContext('2d');
+            
+            if (statusChart) {
+                statusChart.destroy();
+            }
+            
+            const backgroundColors = [
+                'rgba(40, 167, 69, 0.8)',   // Paid - Green
+                'rgba(255, 193, 7, 0.8)',   // Pending - Yellow
+                'rgba(220, 53, 69, 0.8)',   // Overdue - Red
+                'rgba(108, 117, 125, 0.8)'  // Cancelled - Gray
+            ];
+            
+            const borderColors = [
+                'rgb(40, 167, 69)',   // Paid - Green
+                'rgb(255, 193, 7)',   // Pending - Yellow
+                'rgb(220, 53, 69)',   // Overdue - Red
+                'rgb(108, 117, 125)'  // Cancelled - Gray
+            ];
+            
+            statusChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Paid', 'Pending', 'Overdue', 'Cancelled'],
+                    datasets: [{
+                        data: [
+                            statusData.paid || 0,
+                            statusData.pending || 0,
+                            statusData.overdue || 0,
+                            statusData.cancelled || 0
+                        ],
+                        backgroundColor: backgroundColors,
+                        borderColor: borderColors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 12,
+                                padding: 15
+                            }
+                        }
+                    },
+                    cutout: '65%'
+                }
+            });
+        }
+
+        // Process invoice data for charts
+        function processInvoiceData(invoices, period) {
+            const now = new Date();
+            let startDate;
+            
+            if (period === 0) {
+                // All time - use the earliest invoice date
+                startDate = invoices.length > 0 ? 
+                    new Date(Math.min(...invoices.map(i => new Date(i.issue_date)))) : 
+                    new Date(now.getFullYear(), now.getMonth() - 5, 1); // Default to 6 months back
+            } else {
+                startDate = new Date(now.getFullYear(), now.getMonth() - period, 1);
+            }
+            
+            // Filter invoices by date
+            const filteredInvoices = invoices.filter(invoice => {
+                const invoiceDate = new Date(invoice.issue_date);
+                return invoiceDate >= startDate;
+            });
+            
+            // Group by month and calculate totals
+            const monthlyData = {};
+            const statusCounts = {
+                paid: 0,
+                pending: 0,
+                overdue: 0,
+                cancelled: 0
+            };
+            
+            let currentMonthInvoices = 0;
+            let currentMonthRevenue = 0;
+            let lastMonthInvoices = 0;
+            let lastMonthRevenue = 0;
+            
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
+            const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+            const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+            
+            filteredInvoices.forEach(invoice => {
+                const invoiceDate = new Date(invoice.issue_date);
+                const monthYear = `${invoiceDate.getFullYear()}-${invoiceDate.getMonth()}`;
+                
+                // Initialize month if not exists
+                if (!monthlyData[monthYear]) {
+                    monthlyData[monthYear] = {
+                        total: 0,
+                        count: 0,
+                        label: invoiceDate.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+                    };
+                }
+                
+                // Add to monthly total
+                monthlyData[monthYear].total += invoice.total;
+                monthlyData[monthYear].count += 1;
+                
+                // Count by status
+                if (statusCounts.hasOwnProperty(invoice.status)) {
+                    statusCounts[invoice.status] += 1;
+                }
+                
+                // Calculate current and last month stats
+                if (invoiceDate.getMonth() === currentMonth && invoiceDate.getFullYear() === currentYear) {
+                    currentMonthInvoices += 1;
+                    currentMonthRevenue += invoice.total;
+                } else if (invoiceDate.getMonth() === lastMonth && invoiceDate.getFullYear() === lastMonthYear) {
+                    lastMonthInvoices += 1;
+                    lastMonthRevenue += invoice.total;
+                }
+            });
+            
+            // Convert to arrays for chart
+            const months = [];
+            const revenueData = [];
+            
+            // Create array of all months in the period
+            const allMonths = [];
+            let current = new Date(startDate);
+            
+            while (current <= now) {
+                const monthYear = `${current.getFullYear()}-${current.getMonth()}`;
+                allMonths.push({
+                    key: monthYear,
+                    label: current.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+                });
+                current.setMonth(current.getMonth() + 1);
+            }
+            
+            // Fill in data for all months
+            allMonths.forEach(month => {
+                months.push(month.label);
+                revenueData.push(monthlyData[month.key] ? monthlyData[month.key].total : 0);
+            });
+            
+            return {
+                months,
+                revenueData,
+                statusCounts,
+                currentMonth: {
+                    invoices: currentMonthInvoices,
+                    revenue: currentMonthRevenue
+                },
+                lastMonth: {
+                    invoices: lastMonthInvoices,
+                    revenue: lastMonthRevenue
+                }
+            };
+        }
+
+        // Generate activity timeline
+        function generateActivityTimeline(invoices) {
+            const activities = [];
+            const now = new Date();
+            
+            // Create activities from recent invoices
+            invoices.slice(0, 10).forEach(invoice => {
+                const invoiceDate = new Date(invoice.created_at || invoice.issue_date);
+                const timeDiff = now - invoiceDate;
+                const daysDiff = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+                const hoursDiff = Math.floor(timeDiff / (1000 * 60 * 60));
+                const minutesDiff = Math.floor(timeDiff / (1000 * 60));
+                
+                let timeAgo;
+                if (minutesDiff < 60) {
+                    timeAgo = minutesDiff <= 1 ? 'just now' : `${minutesDiff} minutes ago`;
+                } else if (hoursDiff < 24) {
+                    timeAgo = hoursDiff === 1 ? '1 hour ago' : `${hoursDiff} hours ago`;
+                } else if (daysDiff < 7) {
+                    timeAgo = daysDiff === 1 ? '1 day ago' : `${daysDiff} days ago`;
+                } else {
+                    timeAgo = invoiceDate.toLocaleDateString();
+                }
+                
+                activities.push({
+                    type: 'invoice_created',
+                    icon: 'fas fa-file-invoice',
+                    iconColor: 'text-primary',
+                    title: 'New invoice created',
+                    description: `Invoice #${invoice.invoice_number} for ${invoice.client_name}`,
+                    time: timeAgo,
+                    timestamp: invoiceDate
+                });
+                
+                // If invoice was sent, add sent activity
+                if (invoice.last_sent_at) {
+                    const sentDate = new Date(invoice.last_sent_at);
+                    const sentTimeDiff = now - sentDate;
+                    const sentDaysDiff = Math.floor(sentTimeDiff / (1000 * 60 * 60 * 24));
+                    
+                    let sentTimeAgo;
+                    if (sentDaysDiff === 0) {
+                        sentTimeAgo = 'today';
+                    } else if (sentDaysDiff === 1) {
+                        sentTimeAgo = 'yesterday';
+                    } else if (sentDaysDiff < 7) {
+                        sentTimeAgo = `${sentDaysDiff} days ago`;
+                    } else {
+                        sentTimeAgo = sentDate.toLocaleDateString();
+                    }
+                    
+                    activities.push({
+                        type: 'invoice_sent',
+                        icon: 'fas fa-paper-plane',
+                        iconColor: 'text-success',
+                        title: 'Invoice sent to client',
+                        description: `Invoice #${invoice.invoice_number} sent to ${invoice.client_email || 'client'}`,
+                        time: sentTimeAgo,
+                        timestamp: sentDate
+                    });
+                }
+                
+                // If invoice is paid, add payment activity
+                if (invoice.status === 'paid' && invoice.payment_date) {
+                    const paymentDate = new Date(invoice.payment_date);
+                    const paymentTimeDiff = now - paymentDate;
+                    const paymentDaysDiff = Math.floor(paymentTimeDiff / (1000 * 60 * 60 * 24));
+                    
+                    let paymentTimeAgo;
+                    if (paymentDaysDiff === 0) {
+                        paymentTimeAgo = 'today';
+                    } else if (paymentDaysDiff === 1) {
+                        paymentTimeAgo = 'yesterday';
+                    } else if (paymentDaysDiff < 7) {
+                        paymentTimeAgo = `${paymentDaysDiff} days ago`;
+                    } else {
+                        paymentTimeAgo = paymentDate.toLocaleDateString();
+                    }
+                    
+                    activities.push({
+                        type: 'invoice_paid',
+                        icon: 'fas fa-check-circle',
+                        iconColor: 'text-success',
+                        title: 'Invoice paid',
+                        description: `Invoice #${invoice.invoice_number} marked as paid`,
+                        time: paymentTimeAgo,
+                        timestamp: paymentDate
+                    });
+                }
+            });
+            
+            // Sort activities by timestamp (newest first)
+            activities.sort((a, b) => b.timestamp - a.timestamp);
+            
+            // Take only the 5 most recent activities
+            return activities.slice(0, 5);
+        }
+
+        // Global variable for default currency
+        let defaultCurrency = 'USD';
+
         // Load dashboard data
         async function loadDashboard() {
             try {
-                const [invoicesResponse, userResponse] = await Promise.all([
+                const [invoicesResponse, userResponse, statsResponse] = await Promise.all([
                     window.api.getInvoices(),
-                    window.api.getUser()
+                    window.api.getUser(),
+                    window.api.getInvoiceStatistics ? window.api.getInvoiceStatistics() : Promise.resolve({})
                 ]);
 
                 const invoices = invoicesResponse.invoices;
                 const user = userResponse.user;
+                const stats = statsResponse;
+
+                // Set default currency
+                defaultCurrency = user.default_currency || 'USD';
 
                 // Update user info
                 document.getElementById('user-name').textContent = user.company_name || 'Account';
                 document.getElementById('welcome-message').textContent = `Welcome back, ${user.company_name || 'there'}! Here's your business overview.`;
 
-                // Update stats
+                // Process data for charts and stats
+                const processedData = processInvoiceData(invoices, currentChartPeriod);
+
+                // Update stats cards
                 document.getElementById('total-invoices').textContent = invoices.length;
                 
-                // Calculate total revenue
+                // Calculate total revenue and outstanding
                 let totalRevenue = 0;
                 let outstandingAmount = 0;
                 let paidInvoices = 0;
@@ -457,14 +808,34 @@
                     }
                 });
                 
-                document.getElementById('total-revenue').textContent = window.api.formatCurrency(totalRevenue, user.default_currency);
-                document.getElementById('outstanding-amount').textContent = window.api.formatCurrency(outstandingAmount, user.default_currency);
+                document.getElementById('total-revenue').textContent = window.api.formatCurrency(totalRevenue, defaultCurrency);
+                document.getElementById('outstanding-amount').textContent = window.api.formatCurrency(outstandingAmount, defaultCurrency);
                 document.getElementById('pending-invoices').textContent = invoices.length - paidInvoices;
                 document.getElementById('free-invoices').textContent = user.free_invoices_remaining;
 
-                // Update growth percentages (mock data for demo)
-                document.getElementById('invoice-growth').textContent = '12%';
-                document.getElementById('revenue-growth').textContent = '18%';
+                // Calculate growth percentages (simplified for demo)
+                const invoiceGrowth = processedData.lastMonth.invoices > 0 ? 
+                    Math.round(((processedData.currentMonth.invoices - processedData.lastMonth.invoices) / processedData.lastMonth.invoices) * 100) : 
+                    (processedData.currentMonth.invoices > 0 ? 100 : 0);
+                
+                const revenueGrowth = processedData.lastMonth.revenue > 0 ? 
+                    Math.round(((processedData.currentMonth.revenue - processedData.lastMonth.revenue) / processedData.lastMonth.revenue) * 100) : 
+                    (processedData.currentMonth.revenue > 0 ? 100 : 0);
+                
+                document.getElementById('invoice-growth').textContent = `${invoiceGrowth}%`;
+                document.getElementById('revenue-growth').textContent = `${revenueGrowth}%`;
+
+                // Update growth indicators
+                const invoiceGrowthElement = document.getElementById('invoice-growth').closest('small');
+                const revenueGrowthElement = document.getElementById('revenue-growth').closest('small');
+                
+                invoiceGrowthElement.innerHTML = invoiceGrowth >= 0 ? 
+                    `<i class="fas fa-arrow-up me-1"></i> <span id="invoice-growth">${invoiceGrowth}%</span> from last month` :
+                    `<i class="fas fa-arrow-down me-1"></i> <span id="invoice-growth">${Math.abs(invoiceGrowth)}%</span> from last month`;
+                
+                revenueGrowthElement.innerHTML = revenueGrowth >= 0 ? 
+                    `<i class="fas fa-arrow-up me-1"></i> <span id="revenue-growth">${revenueGrowth}%</span> from last month` :
+                    `<i class="fas fa-arrow-down me-1"></i> <span id="revenue-growth">${Math.abs(revenueGrowth)}%</span> from last month`;
 
                 // Update account status
                 const accountStatusBadge = document.getElementById('account-status-badge');
@@ -480,10 +851,15 @@
                     planDetails.textContent = `${user.free_invoices_remaining} free invoices remaining`;
                 }
 
-                // Initialize chart with mock data (in a real app, you'd get this from the API)
-                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'];
-                const revenueData = [1200, 1900, 1500, 2200, 1800, 2500, 2800];
-                initRevenueChart(months, revenueData);
+                // Initialize charts with real data
+                initRevenueChart(processedData.months, processedData.revenueData);
+                initStatusChart(processedData.statusCounts);
+
+                // Update monthly trends
+                document.getElementById('current-month-invoices').textContent = processedData.currentMonth.invoices;
+                document.getElementById('current-month-revenue').textContent = window.api.formatCurrency(processedData.currentMonth.revenue, defaultCurrency);
+                document.getElementById('last-month-invoices').textContent = processedData.lastMonth.invoices;
+                document.getElementById('last-month-revenue').textContent = window.api.formatCurrency(processedData.lastMonth.revenue, defaultCurrency);
 
                 // Display recent invoices
                 const recentInvoicesContainer = document.getElementById('recent-invoices-container');
@@ -509,7 +885,7 @@
                                         <td>${window.api.formatDate(invoice.issue_date)}</td>
                                         <td>${window.api.formatCurrency(invoice.total, invoice.currency)}</td>
                                         <td>
-                                            <span class="badge bg-${invoice.status === 'paid' ? 'success' : 'warning'}">
+                                            <span class="badge bg-${getStatusBadgeColor(invoice.status)}">
                                                 ${invoice.status}
                                             </span>
                                         </td>
@@ -541,8 +917,45 @@
                     `;
                 }
 
+                // Display activity timeline
+                const activityTimeline = document.getElementById('activity-timeline');
+                const activities = generateActivityTimeline(invoices);
+                
+                if (activities.length > 0) {
+                    activityTimeline.innerHTML = activities.map(activity => `
+                        <div class="activity-item d-flex mb-3">
+                            <div class="activity-icon me-3">
+                                <i class="${activity.icon} ${activity.iconColor}"></i>
+                            </div>
+                            <div class="activity-content">
+                                <p class="mb-1 small fw-semibold">${activity.title}</p>
+                                <p class="mb-1 small text-muted">${activity.description}</p>
+                                <small class="text-muted">${activity.time}</small>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    activityTimeline.innerHTML = `
+                        <div class="text-center py-3">
+                            <i class="fas fa-history fa-2x text-muted mb-2"></i>
+                            <p class="text-muted small">No recent activity</p>
+                        </div>
+                    `;
+                }
+
             } catch (error) {
                 window.api.showAlert('Failed to load dashboard: ' + error.message, 'error');
+            }
+        }
+
+        // Helper function to get badge color based on status
+        function getStatusBadgeColor(status) {
+            switch (status) {
+                case 'paid': return 'success';
+                case 'pending': return 'warning';
+                case 'overdue': return 'danger';
+                case 'cancelled': return 'secondary';
+                default: return 'secondary';
             }
         }
 
